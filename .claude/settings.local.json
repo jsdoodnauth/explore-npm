@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(test -f \"d:/repo/meridian-saas-template/src/components/ui/tooltip.tsx\")",
+      "Bash(find \"d:/repo/meridian-saas-template/src/app/\\(protected\\)/dashboard\" -type f)"
+    ]
+  }
+}
