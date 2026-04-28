@@ -13,21 +13,15 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const TwitterIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-    <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z"/>
-  </svg>
-);
-
 interface OAuthButtonsProps {
   callbackURL?: string;
 }
 
 export function OAuthButtons({ callbackURL = "/dashboard" }: OAuthButtonsProps) {
-  const [pending, setPending] = useState<"google" | "twitter" | null>(null);
+  const [pending, setPending] = useState<"google" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleOAuth(provider: "google" | "twitter") {
+  async function handleOAuth(provider: "google") {
     setError(null);
     setPending(provider);
     const { error: authError } = await signIn.social({
@@ -38,7 +32,6 @@ export function OAuthButtons({ callbackURL = "/dashboard" }: OAuthButtonsProps) 
       setError(authError.message ?? "OAuth sign in failed.");
       setPending(null);
     }
-    // On success BetterAuth redirects to the OAuth provider — no manual navigation needed.
   }
 
   return (
@@ -56,15 +49,6 @@ export function OAuthButtons({ callbackURL = "/dashboard" }: OAuthButtonsProps) 
       >
         <GoogleIcon />
         {pending === "google" ? "Redirecting…" : "Continue with Google"}
-      </Button>
-      <Button
-        variant="outline"
-        className="w-full gap-2"
-        disabled={pending !== null}
-        onClick={() => void handleOAuth("twitter")}
-      >
-        <TwitterIcon />
-        {pending === "twitter" ? "Redirecting…" : "Continue with X"}
       </Button>
       {error && <p className="text-center text-sm text-destructive">{error}</p>}
     </div>

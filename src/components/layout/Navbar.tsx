@@ -6,7 +6,6 @@ import { getSession } from "@/lib/session";
 
 const navLinks = [
   { label: "Features", href: "#features" },
-  { label: "Pricing", href: "#pricing" },
   { label: "FAQ", href: "#faq" },
 ];
 
@@ -18,7 +17,7 @@ export async function Navbar() {
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <a href="/" className="font-heading text-xl italic text-foreground">
-          Meridian
+          Explore NPM
         </a>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -44,7 +43,7 @@ export async function Navbar() {
           >
             {isLoggedIn ? "Dashboard" : "Log in"}
           </Button>
-          <Button size="sm" nativeButton={false} render={<a href="#pricing" />}>
+          <Button size="sm" nativeButton={false} render={<a href="/sign-up" />}>
             Get started
           </Button>
           <NavbarMobileMenu links={navLinks} />

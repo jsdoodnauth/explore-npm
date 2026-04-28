@@ -1,88 +1,85 @@
-# Project: SaaS Template
+# CLAUDE.md
 
-## App Structure
-- **Public**: Landing page (`/`) — marketing, unauthenticated
-- **Protected**: Dashboard (`/dashboard/**`) — authenticated users only
-- Route protection via middleware (to be implemented)
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Tech Stack
-- Next.js (App Router, RSC-first)
-- TypeScript
-- Tailwind CSS v4
-- shadcn/ui (style: `base-nova`, baseColor: `neutral`)
-- Lucide React (icons)
+## Commands
 
-## Design System
-
-### Principles
-- Clean and minimal — less is more
-- Dark theme by default; light theme supported
-- Animations should feel purposeful, not decorative
-- Generous whitespace, strong typographic hierarchy
-
-### Typography
-- **Headings**: Serif font (elegant, editorial)
-- **Body / UI**: Sans-serif font (clean, readable)
-- Apply via CSS variables `--font-heading` and `--font-sans`
-- Use `font-heading` Tailwind class for all `h1`–`h3` elements
-- Never mix more than two typefaces
-
-### Colors
-- Neutral palette (grays, off-whites, near-blacks)
-- No saturated brand colors — use subtle tints if needed
-- Dark theme is the primary experience
-- All colors defined as CSS variables in `globals.css` via `oklch()`
-
-### Spacing & Layout
-- Consistent spacing scale via Tailwind
-- Max content width: `max-w-6xl` centered
-- Section padding: `py-24` on desktop, `py-16` on mobile
-- Use CSS Grid and Flexbox — no absolute positioning hacks
-
-### Animations
-- Use Tailwind `animate-*` utilities where possible
-- Use `tw-animate-css` for entrance animations
-- Stagger reveals with `animation-delay` for lists and grids
-- Hover states should be smooth (`transition-all duration-200`)
-- Page load: fade + subtle translate-up on key elements
-- No janky or excessive motion — respect `prefers-reduced-motion`
-
-### Components
-- Always use shadcn/ui primitives from `@/components/ui/`
-- Compose new components on top of shadcn — don't rebuild from scratch
-- Use `cn()` from `@/lib/utils` for all conditional class merging
-- Components live in `src/components/`; UI primitives in `src/components/ui/`
-
-## Code Rules
-- **Never use inline styles** — always use Tailwind classes or CSS variables
-- Prefer Server Components; add `"use client"` only when required (interactivity, hooks, browser APIs)
-- Use named exports for components
-- TypeScript strict mode — no `any`
-- Import alias `@/` maps to `src/`
-
-## After Every Code Change
-- Run `npx tsc --noEmit` after writing or editing any TypeScript file
-- Fix all type errors before considering the task complete
-- This project uses `@base-ui/react` (not Radix) — key API differences:
-  - `Button`: use `nativeButton={false} render={<a href="..." />}` instead of `asChild` (omitting `nativeButton={false}` causes a console warning)
-  - `Accordion`: use `multiple={false}` instead of `type="single" collapsible`
-
-## File Conventions
-```
-src/
-  app/
-    (public)/         # landing page routes
-    (protected)/      # dashboard routes (auth-gated)
-      dashboard/
-  components/
-    ui/               # shadcn primitives
-    layout/           # Navbar, Footer, Sidebar, etc.
-    sections/         # Landing page sections (Hero, Features, Pricing…)
-  lib/
-    utils.ts          # cn() and shared helpers
-  hooks/              # custom React hooks
+```bash
+npm run dev      # Start dev server at localhost:3000
+npm run build    # Production build
+npm run lint     # Run ESLint
 ```
 
-## Slash Commands
-- `/new-component <Name>` — scaffold a new component
-- `/new-page <route>` — scaffold a new App Router page
+Stripe webhook forwarding (required for billing features in dev):
+```bash
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
+
+Generate BetterAuth schema migrations:
+```bash
+npx @better-auth/cli generate
+```
+
+## Environment Setup
+
+Copy `.env.example` to `.env.local`. Required variables:
+- **BetterAuth**: `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`
+- **OAuth**: `GOOGLE_CLIENT_ID/SECRET`, `TWITTER_CLIENT_ID/SECRET`
+- **Supabase**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`
+- **Stripe**: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, all four `STRIPE_*_PRICE_ID` vars
+
+## Architecture
+
+This is a Next.js 16 SaaS starter ("Meridian") with App Router using:
+- **BetterAuth** for authentication (email/password + Google + Twitter OAuth)
+- **Supabase** as the database (Postgres) — used both via the JS client and direct `pg` pool
+- **Stripe** for subscriptions with webhook-driven state sync
+
+### Route Groups
+
+- `(auth)` — public auth pages (`/sign-in`, `/sign-up`, `/forgot-password`, `/reset-password`)
+- `(public)` — marketing landing page
+- `(protected)` — gated by `requireSession()` in its layout; wraps all dashboard/admin routes
+- `api/` — Route Handlers for auth (`[...all]`), Stripe checkout/portal/webhooks, and user profile/password/subscription
+
+### Authentication & Authorization
+
+`src/lib/session.ts` provides three server-only helpers used in Server Components and Route Handlers:
+- `getSession(headers)` — returns session or null
+- `requireSession(headers)` — redirects to `/sign-in` if unauthenticated
+- `requireAdmin(headers)` — redirects to `/dashboard` if not role=`admin`
+
+The `(protected)/layout.tsx` calls `requireSession` and passes the session down to `DashboardShell`.
+
+### Database Split
+
+BetterAuth owns the `user` table (note: quoted in SQL as it's a reserved word). App-specific data lives in a separate `users` table joined by `users_id_fkey`. Admin queries in `src/lib/admin-queries.ts` always LEFT JOIN these two tables.
+
+Supabase clients:
+- `createServerSupabaseClient()` — service role key, bypasses RLS; use only server-side
+- `browserSupabaseClient` — anon key, respects RLS; safe in Client Components
+
+### Stripe Billing
+
+Tiers are defined in `src/lib/stripe-products.ts`: `starter` (free), `pro`, `enterprise`. Price IDs come from env vars at module load — missing IDs throw at startup.
+
+Webhook handler at `api/webhooks/stripe/route.ts` handles: `checkout.session.completed`, `customer.subscription.updated/deleted/trial_will_end`, `invoice.paid/payment_failed`. All events are idempotency-checked via `logWebhookEvent` before processing.
+
+Subscription state is synced to Supabase via `syncSubscriptionToDb` in `src/lib/stripe-helpers.ts`.
+
+### Rate Limiting
+
+`src/lib/rate-limit.ts` provides in-memory sliding-window rate limiting. It works for single-instance deployments only — replace with Redis (e.g. `@upstash/ratelimit`) for multi-instance/edge deployments.
+
+### UI Stack
+
+- Tailwind CSS v4 with `tw-animate-css`
+- shadcn/ui components (config in `components.json`)
+- `@base-ui/react` for headless primitives
+- `recharts` for analytics charts in the admin panel
+- `next-themes` with dark mode as default
+- Fonts: Geist Sans (`--font-sans`) + Playfair Display (`--font-heading`)
+
+### `server-only` Imports
+
+Files in `src/lib/` that touch secrets or DB use `import "server-only"` at the top. Never import these from Client Components.

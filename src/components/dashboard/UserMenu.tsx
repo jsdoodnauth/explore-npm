@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { LogOut, Settings, CreditCard, ChevronDown } from "lucide-react";
+import { LogOut, Settings, ChevronDown } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
@@ -9,10 +9,9 @@ interface UserMenuProps {
   name: string;
   email: string;
   image?: string | null;
-  role?: string;
 }
 
-export function UserMenu({ name, email, image, role }: UserMenuProps) {
+export function UserMenu({ name, email, image }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -79,18 +78,11 @@ export function UserMenu({ name, email, image, role }: UserMenuProps) {
           role="menu"
           className="absolute bottom-full left-0 z-50 mb-2 min-w-[200px] rounded-xl border border-border bg-popover py-1 shadow-lg"
         >
-          {/* User info */}
           <div className="border-b border-border px-3 py-2.5">
             <p className="text-sm font-medium text-foreground">{name}</p>
             <p className="text-xs text-muted-foreground">{email}</p>
-            {role === "admin" && (
-              <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
-                Admin
-              </span>
-            )}
           </div>
 
-          {/* Menu items */}
           <div className="py-1">
             <a
               href="/dashboard/settings"
@@ -100,15 +92,6 @@ export function UserMenu({ name, email, image, role }: UserMenuProps) {
             >
               <Settings className="h-4 w-4 text-muted-foreground" />
               Settings
-            </a>
-            <a
-              href="/dashboard/billing"
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 text-sm text-foreground transition-colors hover:bg-muted"
-            >
-              <CreditCard className="h-4 w-4 text-muted-foreground" />
-              Billing
             </a>
           </div>
 

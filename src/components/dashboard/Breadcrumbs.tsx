@@ -6,12 +6,9 @@ import { cn } from "@/lib/utils";
 
 const LABELS: Record<string, string> = {
   dashboard: "Dashboard",
-  admin: "Admin",
-  billing: "Billing",
   settings: "Settings",
-  users: "Users",
-  analytics: "Analytics",
-  flags: "Feature Flags",
+  favorites: "Favorites",
+  lists: "Lists",
 };
 
 export function Breadcrumbs() {
@@ -19,7 +16,6 @@ export function Breadcrumbs() {
 
   const segments = pathname.split("/").filter(Boolean);
 
-  // Build cumulative hrefs: ["dashboard"] → "/dashboard", etc.
   const crumbs = segments.map((seg, i) => ({
     label: LABELS[seg] ?? seg.charAt(0).toUpperCase() + seg.slice(1),
     href: "/" + segments.slice(0, i + 1).join("/"),

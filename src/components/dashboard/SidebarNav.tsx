@@ -3,13 +3,9 @@
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  CreditCard,
-  Users,
+  Heart,
+  List,
   Settings,
-  ShieldCheck,
-  BarChart3,
-  Flag,
-  Receipt,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -17,13 +13,9 @@ import type { NavSection, NavIconKey } from "@/components/dashboard/nav-config";
 
 const ICONS: Record<NavIconKey, LucideIcon> = {
   "layout-dashboard": LayoutDashboard,
-  "credit-card": CreditCard,
-  "users": Users,
+  "heart": Heart,
+  "list": List,
   "settings": Settings,
-  "shield-check": ShieldCheck,
-  "bar-chart-3": BarChart3,
-  "flag": Flag,
-  "receipt": Receipt,
 };
 
 interface SidebarNavProps {
@@ -46,7 +38,7 @@ export function SidebarNav({ sections, onNavigate }: SidebarNavProps) {
           {section.items.map((item) => {
             const Icon = ICONS[item.icon];
             const isActive =
-              item.href === "/dashboard" || item.href === "/admin"
+              item.href === "/dashboard"
                 ? pathname === item.href
                 : pathname.startsWith(item.href);
 

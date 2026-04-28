@@ -40,7 +40,7 @@ export function MobileSidebar({ sections }: MobileSidebarProps) {
       >
         <div className="flex h-14 items-center justify-between border-b border-sidebar-border px-4">
           <a href="/" className="font-heading text-lg italic text-sidebar-foreground">
-            Meridian
+            Explore NPM
           </a>
           <button
             onClick={() => setOpen(false)}

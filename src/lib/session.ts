@@ -12,10 +12,3 @@ export async function requireSession(headers: Headers): Promise<Session> {
   if (!session) redirect("/sign-in");
   return session;
 }
-
-export async function requireAdmin(headers: Headers): Promise<Session> {
-  const session = await requireSession(headers);
-  const role = (session.user as { role?: string }).role;
-  if (role !== "admin") redirect("/dashboard");
-  return session;
-}

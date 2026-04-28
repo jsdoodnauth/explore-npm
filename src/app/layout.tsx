@@ -16,8 +16,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "SaaS Template",
-  description: "A clean, minimal SaaS starter",
+  title: "Explore NPM",
+  description: "Discover trending and newly surfaced npm packages, organized by category.",
 };
 
 export default function RootLayout({

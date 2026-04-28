@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,15 +16,9 @@ import { OAuthButtons } from "@/components/auth/OAuthButtons";
 const inputClass =
   "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
+const DEFAULT_CALLBACK = "/dashboard";
+
 export function SignInForm() {
-  const searchParams = useSearchParams();
-  const priceId = searchParams.get("priceId");
-  const billingCycle = searchParams.get("billingCycle");
-
-  const callbackURL = priceId
-    ? `/api/stripe/checkout-redirect?priceId=${encodeURIComponent(priceId)}${billingCycle ? `&billingCycle=${encodeURIComponent(billingCycle)}` : ""}`
-    : "/dashboard";
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -39,14 +32,13 @@ export function SignInForm() {
     const { error: authError } = await signIn.email({
       email,
       password,
-      callbackURL,
+      callbackURL: DEFAULT_CALLBACK,
     });
 
     if (authError) {
       setError(authError.message ?? "Sign in failed. Please try again.");
       setIsPending(false);
     }
-    // On success BetterAuth redirects to callbackURL — no manual navigation needed.
   }
 
   return (
@@ -105,13 +97,13 @@ export function SignInForm() {
           </Button>
         </form>
 
-        <OAuthButtons callbackURL={callbackURL} />
+        <OAuthButtons callbackURL={DEFAULT_CALLBACK} />
       </CardContent>
 
       <CardFooter className="justify-center">
         <p className="text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <a href={priceId ? `/sign-up?${searchParams.toString()}` : "/sign-up"} className="text-foreground underline-offset-4 hover:underline">
+          <a href="/sign-up" className="text-foreground underline-offset-4 hover:underline">
             Sign up
           </a>
         </p>

@@ -9,7 +9,6 @@ export const updateProfileSchema = z.object({
     .max(80, "Name must be 80 characters or fewer")
     .trim()
     .optional(),
-  // Only allow https:// URLs from known CDN patterns, or null to clear
   image: z
     .union([
       z.string().url("Image must be a valid URL").max(2048).startsWith("https://"),
@@ -26,24 +25,8 @@ export const changePasswordSchema = z.object({
     .max(128, "Password must be 128 characters or fewer"),
 });
 
-// ── Stripe ─────────────────────────────────────────────────────────────────
-
-export const checkoutSchema = z.object({
-  priceId: z.string().min(1, "priceId is required"),
-  billingCycle: z.enum(["monthly", "yearly"]).optional().default("monthly"),
-});
-
-// ── Admin subscription actions ─────────────────────────────────────────────
-
-export const subscriptionActionSchema = z.object({
-  action: z.enum(["cancel", "cancel_immediately", "reactivate"]),
-});
-
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-/**
- * Parse a Zod schema and return a 400 Response on failure, or the parsed data.
- */
 export function parseBody<T>(
   schema: z.ZodType<T>,
   data: unknown
@@ -59,9 +42,6 @@ export function parseBody<T>(
   return { success: true, data: result.data };
 }
 
-/**
- * Same as parseBody but returns a NextResponse (for routes using NextResponse).
- */
 export function parseBodyNext<T>(
   schema: z.ZodType<T>,
   data: unknown
